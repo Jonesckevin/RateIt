@@ -1,0 +1,178 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    margin-top: 50px;
+    background: #23272f;
+    /* Subtle dark texture using repeating linear gradients */
+    background-image:
+        repeating-linear-gradient(135deg, #23272f 0px, #23272f 8px, #252a33 8px, #252a33 16px),
+        repeating-linear-gradient(45deg, #23272f 0px, #23272f 8px, #20232a 8px, #20232a 16px);
+}
+h1 {
+    color: #cfd6da;
+    font-size: 2.5em;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.rating-btn {
+    font-size: 2em;
+    margin: 10px;
+    padding: 24px 44px;
+    border: none;
+    border-radius: 32px;
+    background: linear-gradient(145deg, #353a45 0%, #23272f 100%);
+    box-shadow:
+        0 0 8px 2px #1bd602cc, /* subtle blue glow */
+        0 6px 16px 0 rgba(0,0,0,0.35),
+        0 2px 4px 0 rgba(0,0,0,0.25),
+        inset 0 2px 8px 0 #444;
+    transition: box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+    outline: none;
+    color: #f3f3f3;
+    position: relative;
+}
+.rating-btn:active {
+    box-shadow:
+        0 2px 4px 0 rgba(0,0,0,0.20),
+        inset 0 2px 8px 0 #222;
+    transform: translateY(2px) scale(0.98);
+}
+.rating-btn:hover {
+    box-shadow:
+        0 0 16px 4px #1bd602cc, /* stronger glow on hover */
+        0 8px 24px 0 rgba(0,0,0,0.40),
+        0 2px 4px 0 rgba(0,0,0,0.25),
+        inset 0 2px 8px 0 #444;
+    z-index: 2;
+}
+.rating-btn.active-highlight,
+.rating-btn:active,
+.rating-btn:hover {
+    box-shadow:
+        0 0 16px 4px #1bd602cc, /* stronger glow on hover/active */
+        0 8px 24px 0 rgba(0,0,0,0.40),
+        0 2px 4px 0 rgba(0,0,0,0.25),
+        inset 0 2px 8px 0 #444;
+    z-index: 2;
+}
+.rating-btn small {
+    font-size: 0.55em;
+    color: #aaa;
+    display: block;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+    left: 0;
+    right: 0;
+}
+.rating-btn small.hotkey-list {
+    color: #aaa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    max-width: 100%;
+    line-height: 1.2;
+    /* Remove ellipsis and overflow hiding */
+    overflow: visible;
+    text-overflow: unset;
+    /* Responsive font size based on container width and content length */
+    font-size: clamp(0.45em, 2vw, 0.9em);
+    /* Use fit-content for width and scale down font if needed */
+    display: block;
+    /* Use a CSS variable for dynamic scaling (set by JS) */
+    --hotkey-scale: 1;
+    transform: scale(var(--hotkey-scale));
+    transform-origin: center top;
+    transition: transform 0.1s, opacity 0.2s, visibility 0.2s;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+.rating-btn small.hotkey-list .hotkey-inner {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    /* inherit font-size scaling */
+    white-space: nowrap;
+    overflow: visible;
+}
+.menu-bar {
+    background: #181b20;
+    color: #fff;
+    padding: 10px 0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.25);
+}
+.menu-bar .menu-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.menu-bar button, .menu-bar .dropdown {
+    background: #0d182e;
+    color: #fff;
+    border: none;
+    margin: 0 10px;
+    padding: 8px 16px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px 0 rgba(0,0,0,0.18);
+    transition: background 0.2s;
+}
+.menu-bar button:hover, .menu-bar .dropdown:hover > button {
+    background: #353a45;
+}
+.menu-bar .dropdown {
+    position: relative;
+    display: inline-block;
+}
+.menu-bar .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #353a45;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+    z-index: 1;
+    left: 0;
+}
+.menu-bar .dropdown-content button {
+    background: #353a45;
+    color: #fff;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 0;
+}
+.menu-bar .dropdown-content button:hover {
+    background: #23272f;
+}
+.menu-bar .dropdown:hover .dropdown-content {
+    display: block;
+}
+.main-content { margin-top: 70px; }
+.rating-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+.rating-btn {
+    flex: 1 1 120px;
+    min-width: 120px;
+    max-width: 200px;
+    box-sizing: border-box;
+}

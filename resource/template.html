@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RateIt - Quick Rating</title>
+    <link rel="stylesheet" href="/resource/style.css">
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="menu-content">
+            <div class="dropdown" style="background:none; box-shadow:none;">
+                <button style="background:none; box-shadow:none; color:#fff; border:none;">Features &#9662;</button>
+                <div class="dropdown-content">
+                    <button onclick="showGraphPopup()">Graph</button>
+                    <button onclick="openSettingsPopup()">Customize Theme</button>
+                </div>
+            </div>
+            <div class="dropdown" style="background:none; box-shadow:none;">
+                <button style="background:none; box-shadow:none; color:#fff; border:none;">Mapping Buttons &#9662;</button>
+                <div class="dropdown-content">
+                    {% for value in range(1, num_buttons+1) %}
+                        <button onclick="startMapping({{value}})">Map Rating {{value}}</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Settings Popup -->
+    <div id="settings-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#23272f; color:#cfd6da; border-radius:16px; padding:32px 36px; min-width:340px; max-width:90vw; box-shadow:0 8px 32px #000; position:relative;">
+            <button onclick="closeSettingsPopup()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:1.5em; cursor:pointer;">&times;</button>
+            <h2 style="color:#1bd602; margin-bottom:18px;">Customize Theme</h2>
+            <form id="theme-form">
+                <table style="width:100%; color:inherit;">
+                    <tr>
+                        <td style="text-align:right; padding:6px 10px;">Text Font:</td>
+                        <td style="text-align:left; padding:6px 10px;">
+                            <select id="font-select">
+                                <option value="Consolas">Consolas</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Tahoma">Tahoma</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:right; padding:6px 10px;">Text Color:</td>
+                        <td style="text-align:left; padding:6px 10px;">
+                            <input type="color" id="text-color" value="#f3f3f3">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:right; padding:6px 10px;">Glow Color:</td>
+                        <td style="text-align:left; padding:6px 10px;">
+                            <input type="color" id="glow-color" value="#1bd602">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:right; padding:6px 10px;">Heading Color:</td>
+                        <td style="text-align:left; padding:6px 10px;">
+                            <input type="color" id="heading-color" value="#cfd6da">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:right; padding:6px 10px;">Menu Background:</td>
+                        <td style="text-align:left; padding:6px 10px;">
+                            <input type="color" id="menu-bg" value="#181b20">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:right; padding:6px 10px;">Background Image:</td>
+                        <td style="text-align:left; padding:6px 10px;">
+                            <input type="file" id="bg-upload" accept="image/*">
+                            <button type="button" id="bg-upload-btn" style="margin-left:8px;">Upload</button>
+                            <br>
+                            <select id="bg-select" style="margin-top:8px; min-width:180px;">
+                                <option value="">-- Default Background --</option>
+                            </select>
+                            <button type="button" id="bg-delete-btn" style="margin-left:8px;">Delete</button>
+                        </td>
+                    </tr>
+                </table>
+                <div style="margin-top:20px; text-align:center;">
+                    <button type="button" onclick="applyThemeSettings()" style="padding:8px 18px; border-radius:8px; background:#1bd602; color:#23272f; border:none; font-weight:bold; cursor:pointer;">Apply</button>
+                    <button type="button" onclick="resetThemeSettings()" style="padding:8px 18px; border-radius:8px; background:#353a45; color:#fff; border:none; margin-left:10px; cursor:pointer;">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Add Graph Popup -->
+    <div id="graph-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:2100; align-items:center; justify-content:center;">
+        <div style="background:#23272f; color:#cfd6da; border-radius:16px; padding:32px 36px; min-width:340px; max-width:90vw; box-shadow:0 8px 32px #000; position:relative;">
+            <button onclick="closeGraphPopup()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:1.5em; cursor:pointer;">&times;</button>
+            <h2 style="color:#1bd602; margin-bottom:18px;">Rating Timeline</h2>
+            <div style="margin-bottom:14px; display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+                <label style="font-size:0.98em;">
+                    Range:
+                    <select id="graph-range" style="margin-left:4px;">
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="365">Last 365 days</option>
+                        <option value="all" selected>All</option>
+                    </select>
+                </label>
+                <label style="font-size:0.98em;">
+                    Group by:
+                    <select id="graph-group" style="margin-left:4px;">
+                        <option value="day" selected>Day</option>
+                        <option value="week">Week</option>
+                        <option value="month">Month</option>
+                    </select>
+                </label>
+            </div>
+            <div style="margin-bottom:10px; text-align:left;">
+                <span style="font-size:0.98em;">
+                    Data Source:
+                    <label style="margin-left:6px;">
+                        <input type="radio" name="graph-source" id="graph-source-csv" value="csv" checked>
+                        CSV
+                    </label>
+                    <label style="margin-left:8px;">
+                        <input type="radio" name="graph-source" id="graph-source-json" value="json">
+                        JSON
+                    </label>
+                </span>
+            </div>
+            <canvas id="rating-chart" width="500" height="260" style="background:#181b20; border-radius:10px;"></canvas>
+            <div id="graph-loading" style="text-align:center; margin-top:10px; color:#aaa;">Loading...</div>
+        </div>
+    </div>
+    <div class="main-content">
+        <h1>Rate on a scale of 1 to {{ num_buttons }}</h1>
+        <div class="rating-row">
+            {% set rating_keys = {} %}
+            {% for key, value in hotkeys.items() %}
+                {% if value not in rating_keys %}
+                    {% set _ = rating_keys.update({value: [key]}) %}
+                {% else %}
+                    {% set _ = rating_keys[value].append(key) %}
+                {% endif %}
+            {% endfor %}
+            {% for rating in range(1, num_buttons+1) %}
+                <button class="rating-btn" id="rating-btn-{{rating}}" onclick="sendRating({{rating}})">
+                    {{rating}}
+                    <br>
+                    <small class="hotkey-list" id="hotkey-list-{{rating}}" style="display:none;">
+                        <span class="hotkey-inner">
+                            {% if rating in rating_keys %}
+                                (Hotkey{{'s' if rating_keys[rating]|length > 1 else ''}}:
+                                {{ rating_keys[rating]|join(', ') }})
+                            {% else %}
+                                &nbsp;
+                            {% endif %}
+                        </span>
+                    </small>
+                </button>
+            {% endfor %}
+        </div>
+        <p id="msg"></p>
+        <p id="map-msg" style="color:orange;"></p>
+        <div class="legend-features" style="margin-top:40px;">
+            <fieldset style="display:inline-block; background:#23272f; border:1px solid #353a45; border-radius:10px; padding:18px 28px; color:#cfd6da;">
+                <legend style="padding:0 10px;">Features</legend>
+                <label style="margin-right:18px;">
+                    <input type="checkbox" id="toggle-hotkeys" onchange="toggleHotkeyDisplay()" />
+                    Show Hotkey Display
+                </label>
+                <br>
+                <label for="num-buttons-slider" style="margin-right:8px;">Number of Buttons:</label>
+                <input type="range" id="num-buttons-slider" min="1" max="10" value="{{ num_buttons }}" style="vertical-align:middle;">
+                <span id="num-buttons-value">{{ num_buttons }}</span>
+                <!-- Add more features here as needed -->
+            </fieldset>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const hotkeys = {{ hotkeys | tojson }};
+        let mappingRating = null;
+        // Default keys for 1-10: '1'-'9','0'
+        let numButtons = {{ num_buttons|default(10) }};
+        // Default keys for 1-10: '1'-'9','0'
+        const defaultKeys = [];
+        for (let i = 1; i <= Math.min(numButtons, 10); i++) {
+            defaultKeys.push(i === 10 ? '0' : String(i));
+        }
+
+        // Map key to rating for 1-10: '1'-'9'->1-9, '0'->10
+        function getRatingForKey(key) {
+            // Main keyboard and Numpad
+            if (defaultKeys.includes(key)) {
+                if (key === '0' && numButtons >= 10) return 10;
+                let n = parseInt(key, 10);
+                if (!isNaN(n) && n >= 1 && n <= numButtons) return n;
+            }
+            // Try hotkey mappings
+            if (hotkeys.hasOwnProperty(key)) return hotkeys[key];
+            if (hotkeys.hasOwnProperty(String(key))) return hotkeys[String(key)];
+            if (hotkeys.hasOwnProperty(Number(key))) return hotkeys[Number(key)];
+            return null;
+        }
+
+        // Dynamically scale hotkey-list font size to fit in button
+        function fitHotkeyLabels() {
+            for (let rating = 1; rating <= numButtons; rating++) {
+                const btn = document.getElementById('rating-btn-' + rating);
+                const label = document.getElementById('hotkey-list-' + rating);
+                if (btn && label) {
+                    label.style.setProperty('--hotkey-scale', 1);
+                    label.style.width = "auto";
+                    let scale = 1;
+                    const maxWidth = btn.clientWidth - 16;
+                    while (label.scrollWidth > maxWidth && scale > 0.5) {
+                        scale -= 0.05;
+                        label.style.setProperty('--hotkey-scale', scale);
+                    }
+                    label.style.width = Math.min(label.scrollWidth, maxWidth) + "px";
+                    label.style.marginLeft = "auto";
+                    label.style.marginRight = "auto";
+                    if (document.getElementById('toggle-hotkeys').checked) {
+                        label.style.display = "block";
+                    }
+                }
+            }
+        }
+
+        function toggleHotkeyDisplay() {
+            const checked = document.getElementById('toggle-hotkeys').checked;
+            for (let rating = 1; rating <= numButtons; rating++) {
+                const label = document.getElementById('hotkey-list-' + rating);
+                if (label) {
+                    label.style.display = checked ? "block" : "none";
+                }
+            }
+            if (checked) fitHotkeyLabels();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Hide hotkey display by default
+            document.getElementById('toggle-hotkeys').checked = false;
+            toggleHotkeyDisplay();
+            fitHotkeyLabels();
+        });
+        window.addEventListener('resize', () => {
+            if (document.getElementById('toggle-hotkeys').checked) {
+                fitHotkeyLabels();
+            }
+        });
+
+        function highlightButton(rating) {
+            const btn = document.getElementById('rating-btn-' + rating);
+            if (btn) {
+                btn.classList.add('active-highlight');
+                setTimeout(() => btn.classList.remove('active-highlight'), 200);
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            // Use e.key for main keyboard and e.code for Numpad
+            let key = e.key;
+            // Map Numpad0-Numpad9 to '0'-'9'
+            if (e.code && e.code.startsWith('Numpad') && e.code.length === 7) {
+                key = e.code.slice(-1);
+                if (key === '0') key = '0';
+            }
+            if (mappingRating !== null) {
+                if (defaultKeys.includes(key)) {
+                    document.getElementById('map-msg').innerText = `Default keys 1-${numButtons >= 10 ? '0' : numButtons} are always mapped.`;
+                } else {
+                    fetch('/map_hotkey', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({key: key, rating: parseInt(mappingRating)})
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('map-msg').innerText = data.message;
+                        if (data.success) {
+                            setTimeout(() => location.reload(), 700);
+                        }
+                    });
+                }
+                mappingRating = null;
+            } else {
+                const rating = getRatingForKey(key);
+                if (rating && Number(rating) >= 1 && Number(rating) <= numButtons) {
+                    sendRating(Number(rating));
+                    highlightButton(Number(rating));
+                }
+            }
+        });
+
+        function sendRating(rating) {
+            fetch('/rate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rating: rating})
+            })
+            .then(res => res.json())
+            .then(function(data) {
+                // Show "Saved" and fade out after 1 second
+                const msgElem = document.getElementById('msg');
+                msgElem.innerText = 'Saved';
+                msgElem.style.opacity = '1';
+                msgElem.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    msgElem.style.opacity = '0';
+                }, 1000);
+                // Optionally, after fade out, clear the text
+                setTimeout(() => {
+                    msgElem.innerText = '';
+                    msgElem.style.transition = '';
+                    msgElem.style.opacity = '';
+                }, 1600);
+            });
+            highlightButton(rating);
+        }
+
+        function startMapping(rating) {
+            mappingRating = rating;
+            document.getElementById('map-msg').innerText = "Press a key to map to rating " + rating + " (except 1-5).";
+        }
+
+        // Theme customization logic
+        function openSettingsPopup() {
+            document.getElementById('settings-popup').style.display = 'flex';
+        }
+        function closeSettingsPopup() {
+            document.getElementById('settings-popup').style.display = 'none';
+        }
+
+        // Graph popup logic
+        function showGraphPopup() {
+            document.getElementById('graph-popup').style.display = 'flex';
+            loadGraphData();
+        }
+        function closeGraphPopup() {
+            document.getElementById('graph-popup').style.display = 'none';
+        }
+
+        let chartInstance = null;
+        function loadGraphData() {
+            document.getElementById('graph-loading').style.display = 'block';
+            const range = document.getElementById('graph-range').value;
+            const group = document.getElementById('graph-group').value;
+            const source = document.getElementById('graph-source-json').checked ? 'json' : 'csv';
+            fetch(`/timeline_data?range=${encodeURIComponent(range)}&group=${encodeURIComponent(group)}&source=${encodeURIComponent(source)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        document.getElementById('graph-loading').innerText = 'Failed to load data.';
+                        return;
+                    }
+                    document.getElementById('graph-loading').style.display = 'none';
+                    const timeline = data.timeline;
+                    const labels = timeline.map(e => e.date);
+                    const avgRatings = timeline.map(e => e.avg_rating);
+                    const counts = timeline.map(e => e.count);
+
+                    const ctx = document.getElementById('rating-chart').getContext('2d');
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+                    chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Average Rating',
+                                data: avgRatings,
+                                borderColor: '#1bd602',
+                                backgroundColor: 'rgba(27,214,2,0.08)',
+                                fill: true,
+                                tension: 0.2,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#1bd602',
+                                yAxisID: 'y',
+                            }, {
+                                label: 'Count',
+                                data: counts,
+                                borderColor: '#3faaff',
+                                backgroundColor: 'rgba(63,170,255,0.08)',
+                                fill: false,
+                                type: 'bar',
+                                yAxisID: 'y1',
+                                order: 2,
+                                barPercentage: 0.4,
+                                categoryPercentage: 0.7,
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                legend: { labels: { color: '#cfd6da' } },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { color: '#cfd6da' },
+                                    grid: { color: '#353a45' }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    min: 0,
+                                    max: 10, // Always show 0 to 10 for ratings
+                                    title: { display: true, text: 'Average Rating', color: '#cfd6da' },
+                                    ticks: { color: '#1bd602' },
+                                    grid: { color: '#353a45' }
+                                },
+                                y1: {
+                                    beginAtZero: true,
+                                    position: 'right',
+                                    title: { display: true, text: 'Count', color: '#3faaff' },
+                                    ticks: { color: '#3faaff' },
+                                    grid: { drawOnChartArea: false }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(() => {
+                    document.getElementById('graph-loading').innerText = 'Failed to load data.';
+                });
+        }
+
+        // Add event listeners for filter controls
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+            const rangeSel = document.getElementById('graph-range');
+            const groupSel = document.getElementById('graph-group');
+            const sourceCsv = document.getElementById('graph-source-csv');
+            const sourceJson = document.getElementById('graph-source-json');
+            if (rangeSel && groupSel) {
+                // Set default values
+                rangeSel.value = "all";
+                groupSel.value = "day";
+                rangeSel.onchange = loadGraphData;
+                groupSel.onchange = loadGraphData;
+            }
+            if (sourceCsv && sourceJson) {
+                sourceCsv.onchange = loadGraphData;
+                sourceJson.onchange = loadGraphData;
+            }
+        });
+
+        // Cookie helpers
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (encodeURIComponent(value) || "")  + expires + "; path=/";
+        }
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length,c.length));
+            }
+            return null;
+        }
+        function eraseCookie(name) {
+            document.cookie = name+'=; Max-Age=-99999999; path=/';
+        }
+
+        // Save theme settings to cookie
+        function saveThemeToCookie(theme) {
+            setCookie('rateit_theme', JSON.stringify(theme), 365);
+        }
+        // Load theme settings from cookie
+        function loadThemeFromCookie() {
+            let data = getCookie('rateit_theme');
+            if (!data) return null;
+            try {
+                return JSON.parse(data);
+            } catch {
+                return null;
+            }
+        }
+
+        // Apply theme settings from form and save to cookie
+        function applyThemeSettings() {
+            let theme = {
+                font: document.getElementById('font-select').value,
+                textColor: document.getElementById('text-color').value,
+                glowColor: document.getElementById('glow-color').value,
+                headingColor: document.getElementById('heading-color').value,
+                menuBg: document.getElementById('menu-bg').value,
+                bgImg: null
+            };
+            // Font
+            document.body.style.fontFamily = theme.font;
+            // Text color
+            document.body.style.color = theme.textColor;
+            // Heading color
+            document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor);
+            // Glow color (for .rating-btn)
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.style.boxShadow = `0 0 8px 2px ${theme.glowColor}cc, 0 6px 16px 0 rgba(0,0,0,0.35), 0 2px 4px 0 rgba(0,0,0,0.25), inset 0 2px 8px 0 #444`;
+            });
+            // Menu background
+            document.querySelectorAll('.menu-bar').forEach(e => e.style.background = theme.menuBg);
+            // Background image
+            let bgInput = document.getElementById('bg-upload');
+            let bgSelect = document.getElementById('bg-select');
+            if (bgInput.files && bgInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    setBackgroundImage(e.target.result);
+                    theme.bgImg = e.target.result;
+                    saveThemeToCookie(theme);
+                };
+                reader.readAsDataURL(bgInput.files[0]);
+            } else if (bgSelect.value) {
+                let url = '/backgrounds/' + encodeURIComponent(bgSelect.value);
+                setBackgroundImage(url);
+                theme.bgImg = url;
+                saveThemeToCookie(theme);
+            } else {
+                let prevTheme = loadThemeFromCookie();
+                if (prevTheme && prevTheme.bgImg) {
+                    setBackgroundImage(prevTheme.bgImg);
+                    theme.bgImg = prevTheme.bgImg;
+                } else {
+                    setBackgroundImage('');
+                }
+                saveThemeToCookie(theme);
+            }
+            closeSettingsPopup();
+        }
+
+        // Reset theme to default and clear cookie
+        function resetThemeSettings() {
+            // Reset all theme customizations
+            document.body.style.fontFamily = '';
+            document.body.style.color = '';
+            document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = '');
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.style.boxShadow = '');
+            document.querySelectorAll('.menu-bar').forEach(e => e.style.background = '');
+            document.body.style.backgroundImage = '';
+            document.body.style.backgroundSize = '';
+            // Reset form values to defaults
+            document.getElementById('font-select').value = 'Consolas';
+            document.getElementById('text-color').value = '#f3f3f3';
+            document.getElementById('glow-color').value = '#1bd602';
+            document.getElementById('heading-color').value = '#cfd6da';
+            document.getElementById('menu-bg').value = '#181b20';
+            document.getElementById('bg-upload').value = '';
+            eraseCookie('rateit_theme');
+            closeSettingsPopup();
+        }
+
+        // On page load, apply theme from cookie if exists
+        window.addEventListener('DOMContentLoaded', () => {
+            // Hide hotkey display by default
+            document.getElementById('toggle-hotkeys').checked = false;
+            toggleHotkeyDisplay();
+            fitHotkeyLabels();
+            let theme = loadThemeFromCookie();
+            if (theme) {
+                document.getElementById('font-select').value = theme.font || 'Consolas';
+                document.getElementById('text-color').value = theme.textColor || '#f3f3f3';
+                document.getElementById('glow-color').value = theme.glowColor || '#1bd602';
+                document.getElementById('heading-color').value = theme.headingColor || '#cfd6da';
+                document.getElementById('menu-bg').value = theme.menuBg || '#181b20';
+                // Apply theme
+                document.body.style.fontFamily = theme.font || 'Consolas';
+                document.body.style.color = theme.textColor || '';
+                document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor || '');
+                document.querySelectorAll('.rating-btn').forEach(btn => btn.style.boxShadow = `0 0 8px 2px ${(theme.glowColor || '#1bd602')}cc, 0 6px 16px 0 rgba(0,0,0,0.35), 0 2px 4px 0 rgba(0,0,0,0.25), inset 0 2px 8px 0 #444`);
+                document.querySelectorAll('.menu-bar').forEach(e => e.style.background = theme.menuBg || '');
+                if (theme.bgImg) {
+                    document.body.style.backgroundImage = `url('${theme.bgImg}')`;
+                    document.body.style.backgroundSize = 'cover';
+                }
+            } else {
+                // Set default to Consolas if no theme
+                document.getElementById('font-select').value = 'Consolas';
+                document.body.style.fontFamily = 'Consolas';
+            }
+        });
+
+        // Background image management
+        function refreshBgSelect(selected) {
+            fetch('/list_backgrounds')
+                .then(res => res.json())
+                .then(files => {
+                    const sel = document.getElementById('bg-select');
+                    sel.innerHTML = '<option value="">-- Default Background --</option>';
+                    files.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f;
+                        opt.textContent = f;
+                        if (selected && selected === f) opt.selected = true;
+                        sel.appendChild(opt);
+                    });
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshBgSelect();
+            // Update slider and value display
+            const slider = document.getElementById('num-buttons-slider');
+            const valueSpan = document.getElementById('num-buttons-value');
+            if (slider && valueSpan) {
+                slider.value = numButtons;
+                valueSpan.textContent = numButtons;
+                slider.oninput = function() {
+                    valueSpan.textContent = this.value;
+                };
+                slider.onchange = function() {
+                    fetch('/set_num_buttons', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({num_buttons: this.value})
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert(data.message || "Failed to set number of buttons.");
+                        }
+                    });
+                };
+            }
+        });
+
+        document.getElementById('bg-upload-btn').onclick = function() {
+            const fileInput = document.getElementById('bg-upload');
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select an image file.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            fetch('/upload_background', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    refreshBgSelect(data.filename);
+                    document.getElementById('bg-upload').value = '';
+                } else {
+                    alert(data.message || 'Upload failed.');
+                }
+            });
+        };
+
+        // Helper to set background image so it always fits the entire screen, keeps aspect ratio, and is fully visible
+        function setBackgroundImage(url) {
+            if (url) {
+                document.body.style.backgroundImage = `url('${url}')`;
+                document.body.style.backgroundSize = 'contain';
+                document.body.style.backgroundRepeat = 'no-repeat';
+                document.body.style.backgroundPosition = 'center center';
+            } else {
+                document.body.style.backgroundImage = '';
+                document.body.style.backgroundSize = '';
+                document.body.style.backgroundRepeat = '';
+                document.body.style.backgroundPosition = '';
+            }
+        }
+
+        document.getElementById('bg-delete-btn').onclick = function() {
+            const sel = document.getElementById('bg-select');
+            const filename = sel.value;
+            if (!filename) {
+                alert('Select an image to delete.');
+                return;
+            }
+            if (!confirm('Delete background image "' + filename + '"?')) return;
+            fetch('/delete_background', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({filename})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    refreshBgSelect();
+                    let theme = loadThemeFromCookie();
+                    if (theme && theme.bgImg && theme.bgImg.includes('/backgrounds/' + filename)) {
+                        theme.bgImg = null;
+                        saveThemeToCookie(theme);
+                        setBackgroundImage('');
+                    }
+                } else {
+                    alert(data.message || 'Delete failed.');
+                }
+            });
+        };
+
+        document.getElementById('bg-select').onchange = function() {
+            const filename = this.value;
+            if (filename) {
+                const url = '/backgrounds/' + encodeURIComponent(filename);
+                setBackgroundImage(url);
+                let theme = loadThemeFromCookie() || {};
+                theme.bgImg = url;
+                saveThemeToCookie(theme);
+            } else {
+                setBackgroundImage('');
+                let theme = loadThemeFromCookie() || {};
+                theme.bgImg = null;
+                saveThemeToCookie(theme);
+            }
+        };
+
+        // In applyThemeSettings(), after handling file upload:
+        // If a background is selected from dropdown, use it
+        function applyThemeSettings() {
+            let theme = {
+                font: document.getElementById('font-select').value,
+                textColor: document.getElementById('text-color').value,
+                glowColor: document.getElementById('glow-color').value,
+                headingColor: document.getElementById('heading-color').value,
+                menuBg: document.getElementById('menu-bg').value,
+                bgImg: null
+            };
+            // Font
+            document.body.style.fontFamily = theme.font;
+            // Text color
+            document.body.style.color = theme.textColor;
+            // Heading color
+            document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor);
+            // Glow color (for .rating-btn)
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.style.boxShadow = `0 0 8px 2px ${theme.glowColor}cc, 0 6px 16px 0 rgba(0,0,0,0.35), 0 2px 4px 0 rgba(0,0,0,0.25), inset 0 2px 8px 0 #444`;
+            });
+            // Menu background
+            document.querySelectorAll('.menu-bar').forEach(e => e.style.background = theme.menuBg);
+            // Background image
+            let bgInput = document.getElementById('bg-upload');
+            let bgSelect = document.getElementById('bg-select');
+            if (bgInput.files && bgInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    setBackgroundImage(e.target.result);
+                    theme.bgImg = e.target.result;
+                    saveThemeToCookie(theme);
+                };
+                reader.readAsDataURL(bgInput.files[0]);
+            } else if (bgSelect.value) {
+                let url = '/backgrounds/' + encodeURIComponent(bgSelect.value);
+                setBackgroundImage(url);
+                theme.bgImg = url;
+                saveThemeToCookie(theme);
+            } else {
+                // If no new image, check if previous image exists in cookie
+                let prevTheme = loadThemeFromCookie();
+                if (prevTheme && prevTheme.bgImg) {
+                    setBackgroundImage(prevTheme.bgImg);
+                    theme.bgImg = prevTheme.bgImg;
+                } else {
+                    setBackgroundImage('');
+                }
+                saveThemeToCookie(theme);
+            }
+            closeSettingsPopup();
+        }
+
+        // In window.addEventListener('DOMContentLoaded', ...), after applying theme:
+        // If theme.bgImg is a /backgrounds/ URL, select it in dropdown
+        window.addEventListener('DOMContentLoaded', () => {
+            // Hide hotkey display by default
+            document.getElementById('toggle-hotkeys').checked = false;
+            toggleHotkeyDisplay();
+            fitHotkeyLabels();
+            let theme = loadThemeFromCookie();
+            if (theme && theme.bgImg && theme.bgImg.startsWith('/backgrounds/')) {
+                let fname = theme.bgImg.split('/backgrounds/')[1];
+                refreshBgSelect(fname);
+            } else {
+                refreshBgSelect();
+            }
+            if (theme) {
+                document.getElementById('font-select').value = theme.font || 'Consolas';
+                document.getElementById('text-color').value = theme.textColor || '#f3f3f3';
+                document.getElementById('glow-color').value = theme.glowColor || '#1bd602';
+                document.getElementById('heading-color').value = theme.headingColor || '#cfd6da';
+                document.getElementById('menu-bg').value = theme.menuBg || '#181b20';
+                // Apply theme
+                document.body.style.fontFamily = theme.font || 'Consolas';
+                document.body.style.color = theme.textColor || '';
+                document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor || '');
+                document.querySelectorAll('.rating-btn').forEach(btn => btn.style.boxShadow = `0 0 8px 2px ${(theme.glowColor || '#1bd602')}cc, 0 6px 16px 0 rgba(0,0,0,0.35), 0 2px 4px 0 rgba(0,0,0,0.25), inset 0 2px 8px 0 #444`);
+                document.querySelectorAll('.menu-bar').forEach(e => e.style.background = theme.menuBg || '');
+                if (theme.bgImg) {
+                    document.body.style.backgroundImage = `url('${theme.bgImg}')`;
+                    document.body.style.backgroundSize = 'cover';
+                }
+            } else {
+                // Set default to Consolas if no theme
+                document.getElementById('font-select').value = 'Consolas';
+                document.body.style.fontFamily = 'Consolas';
+            }
+        });
+    </script>
+</body></html>
