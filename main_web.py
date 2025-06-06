@@ -22,16 +22,26 @@ def load_config():
     if not os.path.exists(RESOURCE_DIR):
         os.makedirs(RESOURCE_DIR)
     if not os.path.exists(CONFIG_FILE):
-        # Default hotkeys: 1-5, default num_buttons: 5
-        config = {"hotkeys": {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10}, "num_buttons": 5}
+        # Default hotkeys: 1-5, default num_buttons: 5, default port: 7331
+        config = {
+            "hotkeys": {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10},
+            "num_buttons": 5,
+            "port": 7331
+        }
         with open(CONFIG_FILE, 'w') as f:
             json.dump(config, f, indent=2)
     else:
         with open(CONFIG_FILE, 'r') as f:
             config = json.load(f)
-        # Backward compatibility: add num_buttons if missing
+        # Backward compatibility: add num_buttons or port if missing
+        changed = False
         if "num_buttons" not in config:
             config["num_buttons"] = 5
+            changed = True
+        if "port" not in config:
+            config["port"] = 7331
+            changed = True
+        if changed:
             with open(CONFIG_FILE, 'w') as f:
                 json.dump(config, f, indent=2)
     return config
@@ -346,5 +356,12 @@ def timeline_data():
         })
     return jsonify({"success": True, "timeline": timeline})
 
+# If this program is being run by flash or python, start the server
+# Run using `flask run` or `python main_web.py`
+# For Gunicorn, use `gunicorn -w 4 -b 0.0.0.0:7331 main_web:app`
 if __name__ == '__main__':
-    app.run(debug=True)
+    try:
+        port = int(config.get('port', 7331))
+    except Exception:
+        port = 7331
+    app.run(debug=True, port=port)
