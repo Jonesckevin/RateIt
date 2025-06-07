@@ -1,6 +1,18 @@
+<style>
+img {
+  max-width: 300px;
+  height: auto;
+}
+</style>
+
 # RateIt
 
 RateIt is a Python-based quick rating system with both a web interface (Flask) and a desktop GUI (PyQt6). It allows you to rate events, map hotkeys (including external controllers), and stores ratings in both CSV and JSON formats for easy access and graphing.
+
+![Example Screenshot](/resource/example1.png)
+![Example Screenshot](/resource/example.png)
+
+
 
 ## Features
 
@@ -103,9 +115,15 @@ services:
     ports: 
       - "7331:7331"
     environment:
-      - FLASK_RUN_HOST=0.0.0.0
-    
+      - FLASK_RUN_HOST=0.0.0.0    
 ```
+### Docker Compose Portainer Via Git
+1. Set `Stack` name to `rateit-app`
+2. Select `Git Repository` as the source
+3. Set `Repository URL` to `https://github.com/Jonesckevin/RateIt`
+4. Set Compose Path to `docker-compose-build.yml`
+
+![Portainer Git Stack Example](/resource/example-git.png)
 
 ## Usage
 
