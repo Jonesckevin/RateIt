@@ -12,7 +12,7 @@ RateIt is a Python-based quick rating system with both a web interface (Flask) a
 ## Features
 
 - **Web App**: Accessible via browser, supports hotkey mapping, theme customization, and graphing of ratings.
-- **Desktop GUI**: PyQt6-based, easy to use, supports hotkey mapping and rating.
+- ~~**Desktop GUI**: PyQt6-based, easy to use, supports hotkey mapping and rating.~~ WIP
 - **Data Storage**: All ratings are saved to both `ratings.csv` and `ratings.json`.
 - **Graphing**: Built-in graphing in the web interface with filtering/grouping options.
 - **Docker Support**: Run the web app in a container with HTTPS and persistent volume mapping.
