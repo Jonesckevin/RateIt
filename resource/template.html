@@ -221,35 +221,28 @@
             </fieldset>
         </div>
     </div>
-    <!--https://cdn.jsdelivr.net/npm/chart.js-->
     <script src="/resource/chart.min.js"></script>
     <script>
         const hotkeys = {{ hotkeys | tojson }};
         let mappingRating = null;
-        // Default keys for 1-10: '1'-'9','0'
         let numButtons = {{ num_buttons|default(10) }};
-        // Default keys for 1-10: '1'-'9','0'
         const defaultKeys = [];
         for (let i = 1; i <= Math.min(numButtons, 10); i++) {
             defaultKeys.push(i === 10 ? '0' : String(i));
         }
 
-        // Map key to rating for 1-10: '1'-'9'->1-9, '0'->10
         function getRatingForKey(key) {
-            // Main keyboard and Numpad
             if (defaultKeys.includes(key)) {
                 if (key === '0' && numButtons >= 10) return 10;
                 let n = parseInt(key, 10);
                 if (!isNaN(n) && n >= 1 && n <= numButtons) return n;
             }
-            // Try hotkey mappings
             if (hotkeys.hasOwnProperty(key)) return hotkeys[key];
             if (hotkeys.hasOwnProperty(String(key))) return hotkeys[String(key)];
             if (hotkeys.hasOwnProperty(Number(key))) return hotkeys[Number(key)];
             return null;
         }
 
-        // Dynamically scale hotkey-list font size to fit in button
         function fitHotkeyLabels() {
             for (let rating = 1; rating <= numButtons; rating++) {
                 const btn = document.getElementById('rating-btn-' + rating);
@@ -285,7 +278,6 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Hide hotkey display by default
             document.getElementById('toggle-hotkeys').checked = false;
             toggleHotkeyDisplay();
             fitHotkeyLabels();
@@ -305,9 +297,7 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            // Use e.key for main keyboard and e.code for Numpad
             let key = e.key;
-            // Map Numpad0-Numpad9 to '0'-'9'
             if (e.code && e.code.startsWith('Numpad') && e.code.length === 7) {
                 key = e.code.slice(-1);
                 if (key === '0') key = '0';
@@ -347,7 +337,6 @@
             })
             .then(res => res.json())
             .then(function(data) {
-                // Show "Saved" and fade out after 1 second
                 const msgElem = document.getElementById('msg');
                 msgElem.innerText = 'Saved';
                 msgElem.style.opacity = '1';
@@ -355,7 +344,6 @@
                 setTimeout(() => {
                     msgElem.style.opacity = '0';
                 }, 1000);
-                // Optionally, after fade out, clear the text
                 setTimeout(() => {
                     msgElem.innerText = '';
                     msgElem.style.transition = '';
@@ -370,7 +358,6 @@
             document.getElementById('map-msg').innerText = "Press a key to map to rating " + rating + " (except 1-5).";
         }
 
-        // Theme customization logic
         function openSettingsPopup() {
             document.getElementById('settings-popup').style.display = 'flex';
         }
@@ -378,7 +365,6 @@
             document.getElementById('settings-popup').style.display = 'none';
         }
 
-        // Graph popup logic
         function showGraphPopup() {
             document.getElementById('graph-popup').style.display = 'flex';
             loadGraphData();
@@ -387,7 +373,6 @@
             document.getElementById('graph-popup').style.display = 'none';
         }
 
-        // Upload popup logic
         function openUploadPopup() {
             document.getElementById('upload-popup').style.display = 'flex';
             document.getElementById('upload-msg').innerText = '';
@@ -461,7 +446,6 @@
                                 y: {
                                     beginAtZero: true,
                                     min: 0,
-                                    max: 10, // Always show 0 to 10 for ratings
                                     title: { display: true, text: 'Average Rating', color: '#cfd6da' },
                                     ticks: { color: '#1bd602' },
                                     grid: { color: '#353a45' }
@@ -482,15 +466,12 @@
                 });
         }
 
-        // Add event listeners for filter controls
         document.addEventListener('DOMContentLoaded', function() {
-            // ...existing code...
             const rangeSel = document.getElementById('graph-range');
             const groupSel = document.getElementById('graph-group');
             const sourceCsv = document.getElementById('graph-source-csv');
             const sourceJson = document.getElementById('graph-source-json');
             if (rangeSel && groupSel) {
-                // Set default values
                 rangeSel.value = "all";
                 groupSel.value = "day";
                 rangeSel.onchange = loadGraphData;
@@ -502,7 +483,6 @@
             }
         });
 
-        // Cookie helpers
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -526,11 +506,9 @@
             document.cookie = name+'=; Max-Age=-99999999; path=/';
         }
 
-        // Save theme settings to cookie
         function saveThemeToCookie(theme) {
             setCookie('rateit_theme', JSON.stringify(theme), 365);
         }
-        // Load theme settings from cookie
         function loadThemeFromCookie() {
             let data = getCookie('rateit_theme');
             if (!data) return null;
@@ -541,7 +519,6 @@
             }
         }
 
-        // Apply theme settings from form and save to cookie and backend
         function applyThemeSettings() {
             let theme = {
                 font: document.getElementById('font-select').value,
@@ -551,19 +528,13 @@
                 menuBg: document.getElementById('menu-bg').value,
                 bgImg: null
             };
-            // Font
             document.body.style.fontFamily = theme.font;
-            // Text color
             document.body.style.color = theme.textColor;
-            // Heading color
             document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor);
-            // Glow color (for .rating-btn)
             document.querySelectorAll('.rating-btn').forEach(btn => {
                 btn.style.boxShadow = `0 0 8px 2px ${theme.glowColor}cc, 0 6px 16px 0 rgba(0,0,0,0.35), 0 2px 4px 0 rgba(0,0,0,0.25), inset 0 2px 8px 0 #444`;
             });
-            // Menu background
             document.querySelectorAll('.menu-bar').forEach(e => e.style.background = theme.menuBg);
-            // Background image
             let bgInput = document.getElementById('bg-upload');
             let bgSelect = document.getElementById('bg-select');
             if (bgInput.files && bgInput.files[0]) {
@@ -595,9 +566,7 @@
             closeSettingsPopup();
         }
 
-        // Reset theme to default and clear cookie, and post default theme to backend
         function resetThemeSettings() {
-            // Default theme values
             let theme = {
                 font: 'Consolas',
                 textColor: '#f3f3f3',
@@ -606,7 +575,6 @@
                 menuBg: '#181b20',
                 bgImg: null
             };
-            // Reset all theme customizations
             document.body.style.fontFamily = '';
             document.body.style.color = '';
             document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = '');
@@ -614,7 +582,6 @@
             document.querySelectorAll('.menu-bar').forEach(e => e.style.background = '');
             document.body.style.backgroundImage = '';
             document.body.style.backgroundSize = '';
-            // Reset form values to defaults
             document.getElementById('font-select').value = theme.font;
             document.getElementById('text-color').value = theme.textColor;
             document.getElementById('glow-color').value = theme.glowColor;
@@ -623,7 +590,6 @@
             document.getElementById('bg-upload').value = '';
             eraseCookie('rateit_theme');
 
-            // Also reset number of buttons and columns to 5
             fetch('/set_num_buttons', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -634,7 +600,6 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({max_columns: 5})
                 }).then(() => {
-                    // Post theme to backend
                     postThemeToBackend(theme, () => location.reload());
                 });
             });
@@ -642,7 +607,6 @@
             closeSettingsPopup();
         }
 
-        // Helper to post theme settings to backend config.json
         function postThemeToBackend(theme, cb) {
             fetch('/set_theme', {
                 method: 'POST',
@@ -651,7 +615,6 @@
             }).then(() => { if (cb) cb(); });
         }
 
-        // Collect current theme settings from form
         function getThemeFromForm() {
             return {
                 font: document.getElementById('font-select').value,
@@ -659,13 +622,10 @@
                 glowColor: document.getElementById('glow-color').value,
                 headingColor: document.getElementById('heading-color').value,
                 menuBg: document.getElementById('menu-bg').value,
-                bgImg: null // Only set by applyThemeSettings
             };
         }
 
-        // Attach onchange listeners to theme controls for live backend update
         document.addEventListener('DOMContentLoaded', function() {
-            // ...existing code...
             ['font-select', 'text-color', 'glow-color', 'heading-color', 'menu-bg'].forEach(function(id) {
                 const el = document.getElementById(id);
                 if (el) {
@@ -677,9 +637,7 @@
             });
         });
 
-        // On page load, apply theme from backend config['theme'] if exists
         window.addEventListener('DOMContentLoaded', () => {
-            // Hide hotkey display by default
             document.getElementById('toggle-hotkeys').checked = false;
             toggleHotkeyDisplay();
             fitHotkeyLabels();
@@ -690,7 +648,6 @@
                 document.getElementById('glow-color').value = theme.glowColor || '#1bd602';
                 document.getElementById('heading-color').value = theme.headingColor || '#cfd6da';
                 document.getElementById('menu-bg').value = theme.menuBg || '#181b20';
-                // Apply theme
                 document.body.style.fontFamily = theme.font || 'Consolas';
                 document.body.style.color = theme.textColor || '';
                 document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor || '');
@@ -701,13 +658,11 @@
                     document.body.style.backgroundSize = 'cover';
                 }
             } else {
-                // Set default to Consolas if no theme
                 document.getElementById('font-select').value = 'Consolas';
                 document.body.style.fontFamily = 'Consolas';
             }
         });
 
-        // Background image management
         function refreshBgSelect(selected) {
             fetch('/list_backgrounds')
                 .then(res => res.json())
@@ -726,7 +681,6 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             refreshBgSelect();
-            // Update slider and value display
             const slider = document.getElementById('num-buttons-slider');
             const valueSpan = document.getElementById('num-buttons-value');
             if (slider && valueSpan) {
@@ -776,7 +730,6 @@
             });
         };
 
-        // Helper to set background image so it always fits the entire screen, keeps aspect ratio, and is fully visible
         function setBackgroundImage(url) {
             if (url) {
                 document.body.style.backgroundImage = `url('${url}')`;
@@ -836,8 +789,6 @@
             }
         };
 
-        // In applyThemeSettings(), after handling file upload:
-        // If a background is selected from dropdown, use it
         function applyThemeSettings() {
             let theme = {
                 font: document.getElementById('font-select').value,
@@ -847,19 +798,13 @@
                 menuBg: document.getElementById('menu-bg').value,
                 bgImg: null
             };
-            // Font
             document.body.style.fontFamily = theme.font;
-            // Text color
             document.body.style.color = theme.textColor;
-            // Heading color
             document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor);
-            // Glow color (for .rating-btn)
             document.querySelectorAll('.rating-btn').forEach(btn => {
                 btn.style.boxShadow = `0 0 8px 2px ${theme.glowColor}cc, 0 6px 16px 0 rgba(0,0,0,0.35), 0 2px 4px 0 rgba(0,0,0,0.25), inset 0 2px 8px 0 #444`;
             });
-            // Menu background
             document.querySelectorAll('.menu-bar').forEach(e => e.style.background = theme.menuBg);
-            // Background image
             let bgInput = document.getElementById('bg-upload');
             let bgSelect = document.getElementById('bg-select');
             if (bgInput.files && bgInput.files[0]) {
@@ -878,7 +823,6 @@
                 saveThemeToCookie(theme);
                 postThemeToBackend(theme);
             } else {
-                // If no new image, check if previous image exists in cookie
                 let prevTheme = loadThemeFromCookie();
                 if (prevTheme && prevTheme.bgImg) {
                     setBackgroundImage(prevTheme.bgImg);
@@ -891,10 +835,7 @@
             closeSettingsPopup();
         }
 
-        // In window.addEventListener('DOMContentLoaded', ...), after applying theme:
-        // If theme.bgImg is a /backgrounds/ URL, select it in dropdown
         window.addEventListener('DOMContentLoaded', () => {
-            // Hide hotkey display by default
             document.getElementById('toggle-hotkeys').checked = false;
             toggleHotkeyDisplay();
             fitHotkeyLabels();
@@ -911,7 +852,6 @@
                 document.getElementById('glow-color').value = theme.glowColor || '#1bd602';
                 document.getElementById('heading-color').value = theme.headingColor || '#cfd6da';
                 document.getElementById('menu-bg').value = theme.menuBg || '#181b20';
-                // Apply theme
                 document.body.style.fontFamily = theme.font || 'Consolas';
                 document.body.style.color = theme.textColor || '';
                 document.querySelectorAll('h1,h2,h3,h4,h5').forEach(e => e.style.color = theme.headingColor || '');
@@ -922,13 +862,11 @@
                     document.body.style.backgroundSize = 'cover';
                 }
             } else {
-                // Set default to Consolas if no theme
                 document.getElementById('font-select').value = 'Consolas';
                 document.body.style.fontFamily = 'Consolas';
             }
         });
 
-        // Upload/Download/Reset handlers
         document.getElementById('upload-form').onsubmit = function(e) {
             e.preventDefault();
             const fileInput = document.getElementById('upload-file');
@@ -968,12 +906,9 @@
                 .catch(() => alert('Reset failed.'));
         }
 
-        // Max columns feature with config update
         document.addEventListener('DOMContentLoaded', function() {
-            // ...existing code...
             const maxColsSlider = document.getElementById('max-cols-slider');
             const maxColsValue = document.getElementById('max-cols-value');
-            // Use value from backend config if available
             let initialMaxCols = parseInt(maxColsSlider.value);
             setMaxColumns(initialMaxCols);
             if (maxColsSlider && maxColsValue) {
@@ -983,7 +918,6 @@
                     setMaxColumns(parseInt(this.value));
                 };
                 maxColsSlider.onchange = function() {
-                    // Save to config.json via backend
                     fetch('/set_max_columns', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -999,24 +933,19 @@
                 row.style.gridTemplateColumns = '';
                 row.style.flexWrap = '';
                 row.style.display = 'flex';
-                // Remove any previous grid settings
                 row.style.display = 'grid';
                 row.style.gridTemplateColumns = `repeat(${cols}, minmax(120px, 1fr))`;
                 row.style.flexWrap = '';
             }
         }
 
-        // Editable title logic
         document.addEventListener('DOMContentLoaded', function() {
-            // ...existing code...
             const titleElem = document.getElementById('editable-title');
             if (titleElem) {
                 titleElem.ondblclick = openTitleEditPopup;
             }
-            // ...existing code...
         });
 
-        // Editable title logic with popup
         function openTitleEditPopup() {
             const popup = document.getElementById('title-edit-popup');
             const input = document.getElementById('title-edit-input');
@@ -1073,10 +1002,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // ...existing code...
-            // Set rainbow glow on load
             setRainbowGlow({{ config.get('rainbow_glow', True) | tojson }});
-            // ...existing code...
         });
     </script>
 </body></html>

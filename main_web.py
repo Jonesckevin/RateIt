@@ -18,12 +18,10 @@ TEMPLATE_FILE = os.path.join(RESOURCE_DIR, 'template.html')
 BACKGROUND_DIR = os.path.join(RESOURCE_DIR, 'backgrounds')
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
 
-# Load or create config file for hotkeys
 def load_config():
     if not os.path.exists(RESOURCE_DIR):
         os.makedirs(RESOURCE_DIR)
     if not os.path.exists(CONFIG_FILE):
-        # Default hotkeys: 1-5, default num_buttons: 5, default port: 7331
         config = {
             "hotkeys": {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10},
             "num_buttons": 5,
@@ -41,7 +39,6 @@ def load_config():
         if "port" not in config:
             config["port"] = 7331
             changed = True
-        # Move theme keys into config['theme'] if not already present
         theme_keys = ['font', 'textColor', 'glowColor', 'headingColor', 'menuBg', 'bgImg']
         if "theme" not in config:
             config["theme"] = {}
@@ -50,7 +47,6 @@ def load_config():
                 config["theme"][key] = config[key]
                 del config[key]
                 changed = True
-        # Ensure all theme keys exist in config['theme']
         defaults = {
             "font": "Consolas",
             "textColor": "#f3f3f3",
@@ -63,7 +59,6 @@ def load_config():
             if k not in config["theme"]:
                 config["theme"][k] = v
                 changed = True
-        # Add rainbow_glow default if missing
         if "rainbow_glow" not in config:
             config["rainbow_glow"] = True
             changed = True
@@ -74,7 +69,6 @@ def load_config():
 
 config = load_config()
 
-# Ensure ratings files exist
 if not os.path.exists(JSON_FILE):
     with open(JSON_FILE, 'w') as f:
         json.dump([], f)
@@ -83,11 +77,9 @@ if not os.path.exists(CSV_FILE):
         writer = csv.writer(f)
         writer.writerow(['date', 'rating'])  # Date first
 
-# Ensure archive directory exists
 if not os.path.exists(ARCHIVE_DIR):
     os.makedirs(ARCHIVE_DIR)
 
-# Ensure backgrounds directory exists
 if not os.path.exists(BACKGROUND_DIR):
     os.makedirs(BACKGROUND_DIR)
 
@@ -162,7 +154,6 @@ def upload_background():
         return jsonify({'success': False, 'message': 'No selected file'}), 400
     if file and allowed_image(file.filename):
         filename = file.filename
-        # Avoid overwriting: add timestamp if exists
         base, ext = os.path.splitext(filename)
         i = 1
         while os.path.exists(os.path.join(BACKGROUND_DIR, filename)):
@@ -188,7 +179,6 @@ def delete_background():
 def index():
     with open(TEMPLATE_FILE, 'r', encoding='utf-8') as f:
         html_template = f.read()
-    # Pass config and config['theme'] to template
     return render_template_string(
         html_template,
         hotkeys=config['hotkeys'],
@@ -211,7 +201,6 @@ def rate():
 
     now_str = datetime.datetime.now().isoformat(timespec='seconds')
 
-    # Append to JSON (store as list of objects with rating and date)
     with open(JSON_FILE, 'r+') as f:
         try:
             ratings = json.load(f)
@@ -224,7 +213,6 @@ def rate():
         json.dump(ratings, f)
         f.truncate()
 
-    # Append to CSV (date first)
     with open(CSV_FILE, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([now_str, rating])
@@ -242,21 +230,17 @@ def map_hotkey():
         return jsonify({"success": False, "message": "Invalid rating."})
     max_rating = config.get('num_buttons', 10)  # default to 10
 
-    # Allow default keys '1'-'9' and '0' for ratings 1-10
     default_keys = [str(i) for i in range(1, 10)] + (['0'] if max_rating >= 10 else [])
     if key in default_keys:
         return jsonify({"success": False, "message": f"Default keys 1-{'0' if max_rating >= 10 else max_rating} are always mapped."})
 
-    # Also block Numpad keys for default mappings
     numpad_keys = [f'Numpad{i}' for i in range(0, 10)]
     if key in numpad_keys:
         return jsonify({"success": False, "message": "Numpad keys 0-9 are reserved for default mappings."})
 
-    # Remove key from any previous mapping
     for k, v in list(config['hotkeys'].items()):
         if k == key:
             del config['hotkeys'][k]
-    # Remove previous mapping for this rating (except for default keys)
     for k, v in list(config['hotkeys'].items()):
         if v == rating and k not in default_keys and k not in numpad_keys:
             del config['hotkeys'][k]
@@ -309,7 +293,6 @@ def set_title():
 @app.route('/set_theme', methods=['POST'])
 def set_theme():
     data = request.get_json()
-    # Only update known theme keys under config['theme']
     theme_keys = ['font', 'textColor', 'glowColor', 'headingColor', 'menuBg', 'bgImg']
     if "theme" not in config:
         config["theme"] = {}
@@ -369,7 +352,6 @@ def timeline_data():
         except Exception:
             return jsonify({"success": False, "message": "Failed to read CSV."}), 500
 
-    # Convert date keys to datetime.date
     date_ratings = []
     for date_str, ratings in data.items():
         try:
@@ -378,13 +360,10 @@ def timeline_data():
             dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
             date_ratings.append((dt, ratings))
         except Exception:
-            # skip invalid date formats
             continue
 
-    # Sort by date
     date_ratings.sort(key=lambda x: x[0])
 
-    # Filter by range
     if range_param != "all":
         try:
             days = int(range_param)
@@ -395,14 +374,12 @@ def timeline_data():
         except Exception:
             pass
 
-    # Grouping
     grouped = defaultdict(list)
     if group_by == "day":
         for dt, ratings in date_ratings:
             grouped[dt.strftime("%Y-%m-%d")].extend(ratings)
     elif group_by == "week":
         for dt, ratings in date_ratings:
-            # ISO week: (year, week)
             year, week, _ = dt.isocalendar()
             key = f"{year}-W{week:02d}"
             grouped[key].extend(ratings)
@@ -411,13 +388,10 @@ def timeline_data():
             key = dt.strftime("%Y-%m")
             grouped[key].extend(ratings)
     else:
-        # fallback to day
         for dt, ratings in date_ratings:
             grouped[dt.strftime("%Y-%m-%d")].extend(ratings)
 
-    # Prepare timeline
     timeline = []
-    # Sort keys chronologically
     def sort_key(k):
         if group_by == "day":
             return k
@@ -470,7 +444,6 @@ def download_data(dtype):
 
 @app.route('/reset_data', methods=['POST'])
 def reset_data():
-    # Backup and reset both CSV and JSON
     archive_file(CSV_FILE)
     archive_file(JSON_FILE)
     with open(CSV_FILE, 'w', newline='') as f:
@@ -480,9 +453,6 @@ def reset_data():
         json.dump([], f)
     return jsonify({'success': True, 'message': 'Databases reset and backed up.'})
 
-# If this program is being run by flash or python, start the server
-# Run using `flask run` or `python main_web.py`
-# For Gunicorn, use `gunicorn -w 4 -b 0.0.0.0:7331 main_web:app`
 if __name__ == '__main__':
     try:
         port = int(config.get('port', 7331))

@@ -3,8 +3,7 @@ body {
     text-align: center;
     margin-top: 50px;
     background: #23272f;
-    /* Subtle dark texture using repeating linear gradients */
-    background-image:
+        background-image:
         repeating-linear-gradient(135deg, #23272f 0px, #23272f 8px, #252a33 8px, #252a33 16px),
         repeating-linear-gradient(45deg, #23272f 0px, #23272f 8px, #20232a 8px, #20232a 16px);
 }
@@ -33,12 +32,10 @@ h1 {
     color: #f3f3f3;
     position: relative;
     z-index: 1;
-    /* Rainbow animated glow */
-    box-shadow: 0 0 12px 4px #fff3;
+        box-shadow: 0 0 12px 4px #fff3;
 }
 .rating-btn:active {
-    /* Slightly larger glow on click, but not as much as .active-highlight */
-    box-shadow:
+        box-shadow:
         0 0 24px 6px #1bd602cc,
         0 2px 4px 0 rgba(0,0,0,0.20),
         inset 0 2px 8px 0 #222;
@@ -46,7 +43,6 @@ h1 {
     z-index: 2;
     transition: box-shadow 0.1s;
 }
-/* Larger glow on hover */
 .rating-btn:hover {
     box-shadow:
         0 0 40px 16px #1bd602cc,
@@ -57,8 +53,7 @@ h1 {
     transition: box-shadow 0.12s;
 }
 .rating-btn.active-highlight {
-    /* Even larger glow for half a second on action */
-    box-shadow:
+        box-shadow:
         0 0 56px 24px #1bd602cc,
         0 8px 24px 0 rgba(0,0,0,0.40),
         0 2px 4px 0 rgba(0,0,0,0.25),
@@ -89,15 +84,11 @@ h1 {
     white-space: nowrap;
     max-width: 100%;
     line-height: 1.2;
-    /* Remove ellipsis and overflow hiding */
-    overflow: visible;
+        overflow: visible;
     text-overflow: unset;
-    /* Responsive font size based on container width and content length */
-    font-size: clamp(0.45em, 2vw, 0.9em);
-    /* Use fit-content for width and scale down font if needed */
-    display: block;
-    /* Use a CSS variable for dynamic scaling (set by JS) */
-    --hotkey-scale: 1;
+        font-size: clamp(0.45em, 2vw, 0.9em);
+        display: block;
+        --hotkey-scale: 1;
     transform: scale(var(--hotkey-scale));
     transform-origin: center top;
     transition: transform 0.1s, opacity 0.2s, visibility 0.2s;
@@ -108,8 +99,7 @@ h1 {
     display: inline-block;
     width: 100%;
     text-align: center;
-    /* inherit font-size scaling */
-    white-space: nowrap;
+        white-space: nowrap;
     overflow: visible;
 }
 .menu-bar {
@@ -186,8 +176,7 @@ h1 {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    /* Default: 5 columns, overridden by JS for max-cols-slider */
-    grid-template-columns: repeat(5, minmax(120px, 1fr));
+        grid-template-columns: repeat(5, minmax(120px, 1fr));
     box-sizing: border-box;
 }
 @media (max-width: 900px) {
@@ -215,13 +204,11 @@ h1 {
     max-width: 200px;
     box-sizing: border-box;
     margin: 0 auto;
-    /* Rainbow animated glow */
-    position: relative;
+        position: relative;
     z-index: 1;
     box-shadow: 0 0 12px 4px #fff3;
 }
 
-/* Remove background, box-shadow, border for .no-bg */
 .no-bg, .no-bg.menu-btn {
     background: none !important;
     box-shadow: none !important;
@@ -229,12 +216,10 @@ h1 {
     color: #fff !important;
 }
 
-/* Danger button (e.g. Reset Data) */
 button.danger {
     color: #ff3b3b !important;
 }
 
-/* Popup overlay and popup box */
 .popup-overlay {
     display: none;
     position: fixed;
@@ -258,8 +243,7 @@ button.danger {
     align-items: center;
 }
 .settings-popup, .graph-popup, .upload-popup, .title-edit-popup {
-    /* Specific popups can override min-width if needed */
-}
+    }
 .popup-close {
     position: absolute;
     top: 12px;
@@ -393,8 +377,7 @@ body.rainbow-glow-enabled .rating-btn::after {
     opacity: 0.7;
     animation: rainbow-glow 2.5s linear infinite;
     transition: opacity 0.2s;
-    /* Hide by default, show on hover/active/highlight */
-    opacity: 0;
+        opacity: 0;
 }
 body.rainbow-glow-enabled .rating-btn:hover::after,
 body.rainbow-glow-enabled .rating-btn:active::after,
@@ -405,7 +388,6 @@ body.rainbow-glow-enabled .rating-btn.active-highlight::after {
     0% { filter: blur(12px) brightness(1.2) hue-rotate(0deg);}
     100% { filter: blur(12px) brightness(1.2) hue-rotate(360deg);}
 }
-/* Remove static box-shadow on hover/active/highlight for clarity when rainbow is enabled */
 body.rainbow-glow-enabled .rating-btn:hover,
 body.rainbow-glow-enabled .rating-btn:active,
 body.rainbow-glow-enabled .rating-btn.active-highlight {
