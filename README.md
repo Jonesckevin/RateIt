@@ -20,12 +20,21 @@ RateIt is a Python-based quick rating system with both a web interface (Flask) a
 
 ## Installation
 ### Quick Start
-
+#### Compose
 ```bash
 git clone http://github.com/jonesckevin/rateit.git
 cd rateit
 docker compose up -d
 ```
+#### From DockerHub
+```bash
+docker run -it -d -p 7331:7331 \
+  --name rateit-app \
+  --hostname rateit-app \
+  jonesckevin/rateit:latest
+```
+---
+
 
 ### Run the Web App (Development)
 
