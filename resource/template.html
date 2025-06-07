@@ -7,15 +7,19 @@
 <body>
     <div class="menu-bar">
         <div class="menu-content">
-            <div class="dropdown" style="background:none; box-shadow:none;">
-                <button style="background:none; box-shadow:none; color:#fff; border:none;">Features &#9662;</button>
+            <div class="dropdown no-bg">
+                <button class="no-bg menu-btn">Features &#9662;</button>
                 <div class="dropdown-content">
                     <button onclick="showGraphPopup()">Graph</button>
                     <button onclick="openSettingsPopup()">Customize Theme</button>
+                    <button onclick="openUploadPopup()">Upload Data</button>
+                    <button onclick="downloadData('csv')">Download CSV</button>
+                    <button onclick="downloadData('json')">Download JSON</button>
+                    <button onclick="resetDatabases()" class="danger">Reset Data</button>
                 </div>
             </div>
-            <div class="dropdown" style="background:none; box-shadow:none;">
-                <button style="background:none; box-shadow:none; color:#fff; border:none;">Mapping Buttons &#9662;</button>
+            <div class="dropdown no-bg">
+                <button class="no-bg menu-btn">Mapping Buttons &#9662;</button>
                 <div class="dropdown-content">
                     {% for value in range(1, num_buttons+1) %}
                         <button onclick="startMapping({{value}})">Map Rating {{value}}</button>
@@ -25,15 +29,15 @@
         </div>
     </div>
     <!-- Settings Popup -->
-    <div id="settings-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:2000; align-items:center; justify-content:center;">
-        <div style="background:#23272f; color:#cfd6da; border-radius:16px; padding:32px 36px; min-width:340px; max-width:90vw; box-shadow:0 8px 32px #000; position:relative;">
-            <button onclick="closeSettingsPopup()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:1.5em; cursor:pointer;">&times;</button>
-            <h2 style="color:#1bd602; margin-bottom:18px;">Customize Theme</h2>
+    <div id="settings-popup" class="popup-overlay">
+        <div class="popup settings-popup">
+            <button onclick="closeSettingsPopup()" class="popup-close">&times;</button>
+            <h2 class="popup-title">Customize Theme</h2>
             <form id="theme-form">
-                <table style="width:100%; color:inherit;">
+                <table class="theme-table">
                     <tr>
-                        <td style="text-align:right; padding:6px 10px;">Text Font:</td>
-                        <td style="text-align:left; padding:6px 10px;">
+                        <td class="theme-label">Text Font:</td>
+                        <td class="theme-input">
                             <select id="font-select">
                                 <option value="Consolas">Consolas</option>
                                 <option value="Arial">Arial</option>
@@ -46,58 +50,58 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align:right; padding:6px 10px;">Text Color:</td>
-                        <td style="text-align:left; padding:6px 10px;">
-                            <input type="color" id="text-color" value="#f3f3f3">
+                        <td class="theme-label">Text Color:</td>
+                        <td class="theme-input">
+                            <input type="color" id="text-color" value="{{ theme.get('textColor', '#f3f3f3') }}">
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align:right; padding:6px 10px;">Glow Color:</td>
-                        <td style="text-align:left; padding:6px 10px;">
-                            <input type="color" id="glow-color" value="#1bd602">
+                        <td class="theme-label">Glow Color:</td>
+                        <td class="theme-input">
+                            <input type="color" id="glow-color" value="{{ theme.get('glowColor', '#1bd602') }}">
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align:right; padding:6px 10px;">Heading Color:</td>
-                        <td style="text-align:left; padding:6px 10px;">
-                            <input type="color" id="heading-color" value="#cfd6da">
+                        <td class="theme-label">Heading Color:</td>
+                        <td class="theme-input">
+                            <input type="color" id="heading-color" value="{{ theme.get('headingColor', '#cfd6da') }}">
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align:right; padding:6px 10px;">Menu Background:</td>
-                        <td style="text-align:left; padding:6px 10px;">
-                            <input type="color" id="menu-bg" value="#181b20">
+                        <td class="theme-label">Menu Background:</td>
+                        <td class="theme-input">
+                            <input type="color" id="menu-bg" value="{{ theme.get('menuBg', '#181b20') }}">
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align:right; padding:6px 10px;">Background Image:</td>
-                        <td style="text-align:left; padding:6px 10px;">
+                        <td class="theme-label">Background Image:</td>
+                        <td class="theme-input">
                             <input type="file" id="bg-upload" accept="image/*">
-                            <button type="button" id="bg-upload-btn" style="margin-left:8px;">Upload</button>
+                            <button type="button" id="bg-upload-btn" class="ml8">Upload</button>
                             <br>
-                            <select id="bg-select" style="margin-top:8px; min-width:180px;">
+                            <select id="bg-select" class="mt8 minw180">
                                 <option value="">-- Default Background --</option>
                             </select>
-                            <button type="button" id="bg-delete-btn" style="margin-left:8px;">Delete</button>
+                            <button type="button" id="bg-delete-btn" class="ml8">Delete</button>
                         </td>
                     </tr>
                 </table>
-                <div style="margin-top:20px; text-align:center;">
-                    <button type="button" onclick="applyThemeSettings()" style="padding:8px 18px; border-radius:8px; background:#1bd602; color:#23272f; border:none; font-weight:bold; cursor:pointer;">Apply</button>
-                    <button type="button" onclick="resetThemeSettings()" style="padding:8px 18px; border-radius:8px; background:#353a45; color:#fff; border:none; margin-left:10px; cursor:pointer;">Reset</button>
+                <div class="theme-actions">
+                    <button type="button" onclick="applyThemeSettings()" class="apply-btn">Apply</button>
+                    <button type="button" onclick="resetThemeSettings()" class="reset-btn">Reset</button>
                 </div>
             </form>
         </div>
     </div>
     <!-- Add Graph Popup -->
-    <div id="graph-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:2100; align-items:center; justify-content:center;">
-        <div style="background:#23272f; color:#cfd6da; border-radius:16px; padding:32px 36px; min-width:340px; max-width:90vw; box-shadow:0 8px 32px #000; position:relative;">
-            <button onclick="closeGraphPopup()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:1.5em; cursor:pointer;">&times;</button>
-            <h2 style="color:#1bd602; margin-bottom:18px;">Rating Timeline</h2>
-            <div style="margin-bottom:14px; display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
-                <label style="font-size:0.98em;">
+    <div id="graph-popup" class="popup-overlay">
+        <div class="popup graph-popup">
+            <button onclick="closeGraphPopup()" class="popup-close">&times;</button>
+            <h2 class="popup-title">Rating Timeline</h2>
+            <div class="graph-controls">
+                <label>
                     Range:
-                    <select id="graph-range" style="margin-left:4px;">
+                    <select id="graph-range">
                         <option value="7">Last 7 days</option>
                         <option value="30">Last 30 days</option>
                         <option value="90">Last 90 days</option>
@@ -105,34 +109,63 @@
                         <option value="all" selected>All</option>
                     </select>
                 </label>
-                <label style="font-size:0.98em;">
+                <label>
                     Group by:
-                    <select id="graph-group" style="margin-left:4px;">
+                    <select id="graph-group">
                         <option value="day" selected>Day</option>
                         <option value="week">Week</option>
                         <option value="month">Month</option>
                     </select>
                 </label>
             </div>
-            <div style="margin-bottom:10px; text-align:left;">
-                <span style="font-size:0.98em;">
+            <div class="graph-source">
+                <span>
                     Data Source:
-                    <label style="margin-left:6px;">
+                    <label>
                         <input type="radio" name="graph-source" id="graph-source-csv" value="csv" checked>
                         CSV
                     </label>
-                    <label style="margin-left:8px;">
+                    <label>
                         <input type="radio" name="graph-source" id="graph-source-json" value="json">
                         JSON
                     </label>
                 </span>
             </div>
-            <canvas id="rating-chart" width="500" height="260" style="background:#181b20; border-radius:10px;"></canvas>
-            <div id="graph-loading" style="text-align:center; margin-top:10px; color:#aaa;">Loading...</div>
+            <canvas id="rating-chart" width="500" height="260" class="graph-canvas"></canvas>
+            <div id="graph-loading" class="graph-loading">Loading...</div>
+        </div>
+    </div>
+    <!-- Upload Popup -->
+    <div id="upload-popup" class="popup-overlay">
+        <div class="popup upload-popup">
+            <button onclick="closeUploadPopup()" class="popup-close">&times;</button>
+            <h2 class="popup-title">Upload CSV or JSON</h2>
+            <form id="upload-form">
+                <input type="file" id="upload-file" accept=".csv,.json" required>
+                <select id="upload-type" class="ml10">
+                    <option value="csv">CSV</option>
+                    <option value="json">JSON</option>
+                </select>
+                <button type="submit" class="ml10">Upload</button>
+            </form>
+            <div id="upload-msg" class="upload-msg"></div>
         </div>
     </div>
     <div class="main-content">
-        <h1>Rate on a scale of 1 to {{ num_buttons }}</h1>
+        <h1 id="editable-title" class="editable-title" title="Double-click to edit">{{ config.get('title', 'Rate on a scale of 1 to ' ~ num_buttons) if config is defined else 'Rate on a scale of 1 to ' ~ num_buttons }}</h1>
+        <!-- Title Edit Popup -->
+        <div id="title-edit-popup" class="popup-overlay">
+            <div class="popup title-edit-popup">
+                <button onclick="closeTitleEditPopup()" class="popup-close">&times;</button>
+                <h3 class="popup-title">Edit Title</h3>
+                <input type="text" id="title-edit-input" class="title-edit-input">
+                <div>
+                    <button onclick="saveTitleEdit()" class="apply-btn mr10">Save</button>
+                    <button onclick="closeTitleEditPopup()" class="reset-btn">Cancel</button>
+                </div>
+                <div id="title-edit-msg" class="title-edit-msg"></div>
+            </div>
+        </div>
         <div class="rating-row">
             {% set rating_keys = {} %}
             {% for key, value in hotkeys.items() %}
@@ -146,7 +179,7 @@
                 <button class="rating-btn" id="rating-btn-{{rating}}" onclick="sendRating({{rating}})">
                     {{rating}}
                     <br>
-                    <small class="hotkey-list" id="hotkey-list-{{rating}}" style="display:none;">
+                    <small class="hotkey-list" id="hotkey-list-{{rating}}">
                         <span class="hotkey-inner">
                             {% if rating in rating_keys %}
                                 (Hotkey{{'s' if rating_keys[rating]|length > 1 else ''}}:
@@ -160,23 +193,36 @@
             {% endfor %}
         </div>
         <p id="msg"></p>
-        <p id="map-msg" style="color:orange;"></p>
-        <div class="legend-features" style="margin-top:40px;">
-            <fieldset style="display:inline-block; background:#23272f; border:1px solid #353a45; border-radius:10px; padding:18px 28px; color:#cfd6da;">
-                <legend style="padding:0 10px;">Features</legend>
-                <label style="margin-right:18px;">
-                    <input type="checkbox" id="toggle-hotkeys" onchange="toggleHotkeyDisplay()" />
-                    Show Hotkey Display
-                </label>
-                <br>
-                <label for="num-buttons-slider" style="margin-right:8px;">Number of Buttons:</label>
-                <input type="range" id="num-buttons-slider" min="1" max="10" value="{{ num_buttons }}" style="vertical-align:middle;">
-                <span id="num-buttons-value">{{ num_buttons }}</span>
-                <!-- Add more features here as needed -->
+        <p id="map-msg" class="map-msg"></p>
+        <div class="legend-features">
+            <fieldset class="features-fieldset">
+                <legend class="features-legend">Features</legend>
+                <div class="features-grid">
+                    <label for="rainbow-glow-checkbox">Rainbow Glow:</label>
+                    <span>
+                        <input type="checkbox" id="rainbow-glow-checkbox" {% if config.get('rainbow_glow', True) %}checked{% endif %} onchange="toggleRainbowGlow()" />
+                    </span>
+                    <label>
+                        Show Hotkey Display:
+                    </label>
+                    <span><input type="checkbox" id="toggle-hotkeys" onchange="toggleHotkeyDisplay()" /></span>
+                    <label for="num-buttons-slider">Number of Buttons:</label>
+                    <span>
+                        <input type="range" id="num-buttons-slider" min="1" max="10" value="{{ num_buttons }}">
+                        <span id="num-buttons-value">{{ num_buttons }}</span>
+                    </span>
+                    <label for="max-cols-slider">Max Columns:</label>
+                    <span>
+                        <input type="range" id="max-cols-slider" min="1" max="10" value="{{ config.get('max_columns', 5) if config is defined else 5 }}">
+                        <span id="max-cols-value">{{ config.get('max_columns', 5) if config is defined else 5 }}</span>
+                    </span>
+                    
+                </div>
             </fieldset>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!--https://cdn.jsdelivr.net/npm/chart.js-->
+    <script src="/resource/chart.min.js"></script>
     <script>
         const hotkeys = {{ hotkeys | tojson }};
         let mappingRating = null;
@@ -276,7 +322,7 @@
                         body: JSON.stringify({key: key, rating: parseInt(mappingRating)})
                     })
                     .then(res => res.json())
-                    .then(data => {
+                    .then(function(data) {
                         document.getElementById('map-msg').innerText = data.message;
                         if (data.success) {
                             setTimeout(() => location.reload(), 700);
@@ -339,6 +385,16 @@
         }
         function closeGraphPopup() {
             document.getElementById('graph-popup').style.display = 'none';
+        }
+
+        // Upload popup logic
+        function openUploadPopup() {
+            document.getElementById('upload-popup').style.display = 'flex';
+            document.getElementById('upload-msg').innerText = '';
+            document.getElementById('upload-form').reset();
+        }
+        function closeUploadPopup() {
+            document.getElementById('upload-popup').style.display = 'none';
         }
 
         let chartInstance = null;
@@ -485,7 +541,7 @@
             }
         }
 
-        // Apply theme settings from form and save to cookie
+        // Apply theme settings from form and save to cookie and backend
         function applyThemeSettings() {
             let theme = {
                 font: document.getElementById('font-select').value,
@@ -516,6 +572,7 @@
                     setBackgroundImage(e.target.result);
                     theme.bgImg = e.target.result;
                     saveThemeToCookie(theme);
+                    postThemeToBackend(theme);
                 };
                 reader.readAsDataURL(bgInput.files[0]);
             } else if (bgSelect.value) {
@@ -523,6 +580,7 @@
                 setBackgroundImage(url);
                 theme.bgImg = url;
                 saveThemeToCookie(theme);
+                postThemeToBackend(theme);
             } else {
                 let prevTheme = loadThemeFromCookie();
                 if (prevTheme && prevTheme.bgImg) {
@@ -532,12 +590,22 @@
                     setBackgroundImage('');
                 }
                 saveThemeToCookie(theme);
+                postThemeToBackend(theme);
             }
             closeSettingsPopup();
         }
 
-        // Reset theme to default and clear cookie
+        // Reset theme to default and clear cookie, and post default theme to backend
         function resetThemeSettings() {
+            // Default theme values
+            let theme = {
+                font: 'Consolas',
+                textColor: '#f3f3f3',
+                glowColor: '#1bd602',
+                headingColor: '#cfd6da',
+                menuBg: '#181b20',
+                bgImg: null
+            };
             // Reset all theme customizations
             document.body.style.fontFamily = '';
             document.body.style.color = '';
@@ -547,23 +615,75 @@
             document.body.style.backgroundImage = '';
             document.body.style.backgroundSize = '';
             // Reset form values to defaults
-            document.getElementById('font-select').value = 'Consolas';
-            document.getElementById('text-color').value = '#f3f3f3';
-            document.getElementById('glow-color').value = '#1bd602';
-            document.getElementById('heading-color').value = '#cfd6da';
-            document.getElementById('menu-bg').value = '#181b20';
+            document.getElementById('font-select').value = theme.font;
+            document.getElementById('text-color').value = theme.textColor;
+            document.getElementById('glow-color').value = theme.glowColor;
+            document.getElementById('heading-color').value = theme.headingColor;
+            document.getElementById('menu-bg').value = theme.menuBg;
             document.getElementById('bg-upload').value = '';
             eraseCookie('rateit_theme');
+
+            // Also reset number of buttons and columns to 5
+            fetch('/set_num_buttons', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({num_buttons: 5})
+            }).then(() => {
+                fetch('/set_max_columns', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({max_columns: 5})
+                }).then(() => {
+                    // Post theme to backend
+                    postThemeToBackend(theme, () => location.reload());
+                });
+            });
+
             closeSettingsPopup();
         }
 
-        // On page load, apply theme from cookie if exists
+        // Helper to post theme settings to backend config.json
+        function postThemeToBackend(theme, cb) {
+            fetch('/set_theme', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(theme)
+            }).then(() => { if (cb) cb(); });
+        }
+
+        // Collect current theme settings from form
+        function getThemeFromForm() {
+            return {
+                font: document.getElementById('font-select').value,
+                textColor: document.getElementById('text-color').value,
+                glowColor: document.getElementById('glow-color').value,
+                headingColor: document.getElementById('heading-color').value,
+                menuBg: document.getElementById('menu-bg').value,
+                bgImg: null // Only set by applyThemeSettings
+            };
+        }
+
+        // Attach onchange listeners to theme controls for live backend update
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+            ['font-select', 'text-color', 'glow-color', 'heading-color', 'menu-bg'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', function() {
+                        let theme = getThemeFromForm();
+                        postThemeToBackend(theme);
+                    });
+                }
+            });
+        });
+
+        // On page load, apply theme from backend config['theme'] if exists
         window.addEventListener('DOMContentLoaded', () => {
             // Hide hotkey display by default
             document.getElementById('toggle-hotkeys').checked = false;
             toggleHotkeyDisplay();
             fitHotkeyLabels();
-            let theme = loadThemeFromCookie();
+            let theme = {{ theme | tojson }};
             if (theme) {
                 document.getElementById('font-select').value = theme.font || 'Consolas';
                 document.getElementById('text-color').value = theme.textColor || '#f3f3f3';
@@ -748,6 +868,7 @@
                     setBackgroundImage(e.target.result);
                     theme.bgImg = e.target.result;
                     saveThemeToCookie(theme);
+                    postThemeToBackend(theme);
                 };
                 reader.readAsDataURL(bgInput.files[0]);
             } else if (bgSelect.value) {
@@ -755,6 +876,7 @@
                 setBackgroundImage(url);
                 theme.bgImg = url;
                 saveThemeToCookie(theme);
+                postThemeToBackend(theme);
             } else {
                 // If no new image, check if previous image exists in cookie
                 let prevTheme = loadThemeFromCookie();
@@ -804,6 +926,157 @@
                 document.getElementById('font-select').value = 'Consolas';
                 document.body.style.fontFamily = 'Consolas';
             }
+        });
+
+        // Upload/Download/Reset handlers
+        document.getElementById('upload-form').onsubmit = function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('upload-file');
+            const type = document.getElementById('upload-type').value;
+            const msg = document.getElementById('upload-msg');
+            if (!fileInput.files || !fileInput.files[0]) {
+                msg.innerText = 'Please select a file.';
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('type', type);
+            fetch('/upload_data', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                msg.innerText = data.message || (data.success ? 'Upload successful.' : 'Upload failed.');
+                if (data.success) setTimeout(() => { closeUploadPopup(); location.reload(); }, 1200);
+            })
+            .catch(() => { msg.innerText = 'Upload failed.'; });
+        };
+
+        function downloadData(type) {
+            window.location = '/download_data/' + type;
+        }
+
+        function resetDatabases() {
+            if (!confirm('This will backup and clear both ratings.csv and ratings.json. Continue?')) return;
+            fetch('/reset_data', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || (data.success ? 'Reset successful.' : 'Reset failed.'));
+                    if (data.success) location.reload();
+                })
+                .catch(() => alert('Reset failed.'));
+        }
+
+        // Max columns feature with config update
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+            const maxColsSlider = document.getElementById('max-cols-slider');
+            const maxColsValue = document.getElementById('max-cols-value');
+            // Use value from backend config if available
+            let initialMaxCols = parseInt(maxColsSlider.value);
+            setMaxColumns(initialMaxCols);
+            if (maxColsSlider && maxColsValue) {
+                maxColsValue.textContent = maxColsSlider.value;
+                maxColsSlider.oninput = function() {
+                    maxColsValue.textContent = this.value;
+                    setMaxColumns(parseInt(this.value));
+                };
+                maxColsSlider.onchange = function() {
+                    // Save to config.json via backend
+                    fetch('/set_max_columns', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({max_columns: this.value})
+                    });
+                };
+            }
+        });
+
+        function setMaxColumns(cols) {
+            const row = document.querySelector('.rating-row');
+            if (row) {
+                row.style.gridTemplateColumns = '';
+                row.style.flexWrap = '';
+                row.style.display = 'flex';
+                // Remove any previous grid settings
+                row.style.display = 'grid';
+                row.style.gridTemplateColumns = `repeat(${cols}, minmax(120px, 1fr))`;
+                row.style.flexWrap = '';
+            }
+        }
+
+        // Editable title logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+            const titleElem = document.getElementById('editable-title');
+            if (titleElem) {
+                titleElem.ondblclick = openTitleEditPopup;
+            }
+            // ...existing code...
+        });
+
+        // Editable title logic with popup
+        function openTitleEditPopup() {
+            const popup = document.getElementById('title-edit-popup');
+            const input = document.getElementById('title-edit-input');
+            const titleElem = document.getElementById('editable-title');
+            const msg = document.getElementById('title-edit-msg');
+            input.value = titleElem.innerText;
+            msg.innerText = '';
+            popup.style.display = 'flex';
+            input.focus();
+            input.select();
+        }
+        function closeTitleEditPopup() {
+            document.getElementById('title-edit-popup').style.display = 'none';
+        }
+        function saveTitleEdit() {
+            const input = document.getElementById('title-edit-input');
+            const newTitle = input.value.trim();
+            const msg = document.getElementById('title-edit-msg');
+            if (!newTitle) {
+                msg.innerText = "Title cannot be empty.";
+                return;
+            }
+            fetch('/set_title', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title: newTitle})
+            }).then(res => {
+                if (!res.ok) return res.json().then(data => { throw data; });
+                return res.json();
+            }).then(() => {
+                document.getElementById('editable-title').innerText = newTitle;
+                closeTitleEditPopup();
+            }).catch(err => {
+                msg.innerText = (err && err.message) ? err.message : "Failed to save title.";
+            });
+        }
+
+        function setRainbowGlow(enabled) {
+            if (enabled) {
+                document.body.classList.add('rainbow-glow-enabled');
+            } else {
+                document.body.classList.remove('rainbow-glow-enabled');
+            }
+        }
+
+        function toggleRainbowGlow() {
+            const enabled = document.getElementById('rainbow-glow-checkbox').checked;
+            setRainbowGlow(enabled);
+            fetch('/set_rainbow_glow', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rainbow_glow: enabled})
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // ...existing code...
+            // Set rainbow glow on load
+            setRainbowGlow({{ config.get('rainbow_glow', True) | tojson }});
+            // ...existing code...
         });
     </script>
 </body></html>

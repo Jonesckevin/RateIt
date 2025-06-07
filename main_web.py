@@ -1,10 +1,11 @@
-from flask import Flask, render_template_string, request, jsonify, send_from_directory
+from flask import Flask, render_template_string, request, jsonify, send_from_directory, send_file
 import json
 import csv
 import os
 import shutil
 import datetime
 from collections import defaultdict
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -33,13 +34,38 @@ def load_config():
     else:
         with open(CONFIG_FILE, 'r') as f:
             config = json.load(f)
-        # Backward compatibility: add num_buttons or port if missing
         changed = False
         if "num_buttons" not in config:
             config["num_buttons"] = 5
             changed = True
         if "port" not in config:
             config["port"] = 7331
+            changed = True
+        # Move theme keys into config['theme'] if not already present
+        theme_keys = ['font', 'textColor', 'glowColor', 'headingColor', 'menuBg', 'bgImg']
+        if "theme" not in config:
+            config["theme"] = {}
+        for key in theme_keys:
+            if key in config:
+                config["theme"][key] = config[key]
+                del config[key]
+                changed = True
+        # Ensure all theme keys exist in config['theme']
+        defaults = {
+            "font": "Consolas",
+            "textColor": "#f3f3f3",
+            "glowColor": "#1bd602",
+            "headingColor": "#cfd6da",
+            "menuBg": "#181b20",
+            "bgImg": None
+        }
+        for k, v in defaults.items():
+            if k not in config["theme"]:
+                config["theme"][k] = v
+                changed = True
+        # Add rainbow_glow default if missing
+        if "rainbow_glow" not in config:
+            config["rainbow_glow"] = True
             changed = True
         if changed:
             with open(CONFIG_FILE, 'w') as f:
@@ -162,7 +188,14 @@ def delete_background():
 def index():
     with open(TEMPLATE_FILE, 'r', encoding='utf-8') as f:
         html_template = f.read()
-    return render_template_string(html_template, hotkeys=config['hotkeys'], num_buttons=config.get('num_buttons', 5))
+    # Pass config and config['theme'] to template
+    return render_template_string(
+        html_template,
+        hotkeys=config['hotkeys'],
+        num_buttons=config.get('num_buttons', 5),
+        config=config,
+        theme=config.get('theme', {})
+    )
 
 @app.route('/rate', methods=['POST'])
 def rate():
@@ -243,6 +276,55 @@ def set_num_buttons():
     except Exception:
         return jsonify({"success": False, "message": "Invalid number."}), 400
     config['num_buttons'] = num
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+    return jsonify({"success": True})
+
+@app.route('/set_max_columns', methods=['POST'])
+def set_max_columns():
+    data = request.get_json()
+    max_cols = data.get('max_columns')
+    try:
+        max_cols = int(max_cols)
+        if not (1 <= max_cols <= 10):
+            raise ValueError
+    except Exception:
+        return jsonify({"success": False, "message": "Invalid number."}), 400
+    config['max_columns'] = max_cols
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+    return jsonify({"success": True})
+
+@app.route('/set_title', methods=['POST'])
+def set_title():
+    data = request.get_json()
+    title = data.get('title', '').strip()
+    if not title:
+        return jsonify({"success": False, "message": "Title cannot be empty."}), 400
+    config['title'] = title
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+    return jsonify({"success": True})
+
+@app.route('/set_theme', methods=['POST'])
+def set_theme():
+    data = request.get_json()
+    # Only update known theme keys under config['theme']
+    theme_keys = ['font', 'textColor', 'glowColor', 'headingColor', 'menuBg', 'bgImg']
+    if "theme" not in config:
+        config["theme"] = {}
+    for key in theme_keys:
+        if key in data:
+            config["theme"][key] = data[key]
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+    return jsonify({"success": True})
+
+@app.route('/set_rainbow_glow', methods=['POST'])
+def set_rainbow_glow():
+    data = request.get_json()
+    val = data.get('rainbow_glow')
+    config['rainbow_glow'] = bool(val)
     with open(CONFIG_FILE, 'w') as f:
         json.dump(config, f, indent=2)
     return jsonify({"success": True})
@@ -355,6 +437,48 @@ def timeline_data():
             "count": len(ratings)
         })
     return jsonify({"success": True, "timeline": timeline})
+
+@app.route('/upload_data', methods=['POST'])
+def upload_data():
+    file = request.files.get('file')
+    dtype = request.form.get('type')
+    if not file or dtype not in ('csv', 'json'):
+        return jsonify({'success': False, 'message': 'Invalid upload.'}), 400
+    filename = secure_filename(file.filename)
+    if dtype == 'csv':
+        if not filename.lower().endswith('.csv'):
+            return jsonify({'success': False, 'message': 'Must upload a CSV file.'}), 400
+        archive_file(CSV_FILE)
+        file.save(CSV_FILE)
+        return jsonify({'success': True, 'message': 'CSV uploaded.'})
+    elif dtype == 'json':
+        if not filename.lower().endswith('.json'):
+            return jsonify({'success': False, 'message': 'Must upload a JSON file.'}), 400
+        archive_file(JSON_FILE)
+        file.save(JSON_FILE)
+        return jsonify({'success': True, 'message': 'JSON uploaded.'})
+    return jsonify({'success': False, 'message': 'Unknown error.'}), 400
+
+@app.route('/download_data/<dtype>')
+def download_data(dtype):
+    if dtype == 'csv':
+        return send_file(CSV_FILE, as_attachment=True, download_name='ratings.csv')
+    elif dtype == 'json':
+        return send_file(JSON_FILE, as_attachment=True, download_name='ratings.json')
+    else:
+        return "Invalid type", 400
+
+@app.route('/reset_data', methods=['POST'])
+def reset_data():
+    # Backup and reset both CSV and JSON
+    archive_file(CSV_FILE)
+    archive_file(JSON_FILE)
+    with open(CSV_FILE, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['date', 'rating'])
+    with open(JSON_FILE, 'w') as f:
+        json.dump([], f)
+    return jsonify({'success': True, 'message': 'Databases reset and backed up.'})
 
 # If this program is being run by flash or python, start the server
 # Run using `flask run` or `python main_web.py`
