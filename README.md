@@ -18,7 +18,7 @@ RateIt is a Python-based quick rating system with both a web interface (Flask) a
 - **Data Storage**: Downloadable and uploadable, ratings are saved to both `ratings.csv` and `ratings.json`.
 - **Graphing**: Built-in graphing in the web interface with filtering/grouping options.
 - **Docker Support**: Run the web app in a container with HTTPS and persistent volume mapping.
-- **Customizable**: Easily modify hotkeys, number of buttons, and more.
+- **Customizable**: Easily modify hotkeys, number of buttons, and enable/disable Random Hover/Select.
 
 ## Installation
 ### Quick Start
