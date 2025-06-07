@@ -2,8 +2,10 @@
 
 RateIt is a Python-based quick rating system with both a web interface (Flask) and a desktop GUI (PyQt6). It allows you to rate events, map hotkeys (including external controllers), and stores ratings in both CSV and JSON formats for easy access and graphing.
 
-![Example Screenshot](/resource/example1.png)
-![Example Screenshot](/resource/example.png)
+<p align="center">
+  <img src="/resource/example1.png" alt="Example Screenshot" style="max-width:300px;">
+  <img src="/resource/example.png" alt="Example Screenshot" style="max-width:300px;">
+</p>
 
 
 
