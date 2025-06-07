@@ -7,8 +7,6 @@ RateIt is a Python-based quick rating system with both a web interface (Flask) a
   <img src="./resource/example.png" alt="Example Screenshot" style="max-width:300px;">
 </p>
 
-
-
 ## Features
 
 - **Web App**: Accessible via browser
@@ -27,21 +25,7 @@ RateIt is a Python-based quick rating system with both a web interface (Flask) a
 git clone http://github.com/jonesckevin/rateit.git
 cd rateit
 docker compose up -d
-
 ```
-### Requirements
-
-- Python 3.8+
-- (For GUI) PyQt6
-- (For Web) Flask
-
-### Install dependencies
-
-```bash
-pip install flask pyqt6
-```
-
-Or use a `requirements.txt` if provided.
 
 ### Run the Web App (Development)
 
@@ -134,5 +118,3 @@ services:
 - All data/config files are stored in the project directory and can be mapped as Docker volumes for persistence and easy modification.
 - The web app supports HTTPS with a self-signed certificate by default in Docker.
 - You can use external controllers by mapping their keys to ratings.
-
----
