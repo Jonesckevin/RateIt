@@ -345,6 +345,69 @@ button.danger {
 .map-msg {
     color: orange;
 }
+/* ---- Rating save feedback ---- */
+/* Floating confirmation badge: always visible, never blocks clicks. */
+#msg {
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    z-index: 3000;
+    margin: 0;
+    padding: 14px 36px;
+    border-radius: 999px;
+    pointer-events: none;
+    white-space: nowrap;
+    background: rgba(12, 16, 12, 0.94);
+    border: 2px solid #1bd602;
+    color: #1bd602;
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 14px rgba(27, 214, 2, 0.9);
+    box-shadow:
+        0 0 26px 6px rgba(27, 214, 2, 0.5),
+        0 10px 28px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    transform: translateX(-50%) translateY(14px) scale(0.9);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+#msg.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+#msg.pop {
+    animation: saved-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#msg.saving {
+    border-color: #f0c419;
+    color: #f5d24a;
+    text-shadow: 0 0 14px rgba(240, 196, 25, 0.85);
+    box-shadow:
+        0 0 26px 6px rgba(240, 196, 25, 0.4),
+        0 10px 28px rgba(0, 0, 0, 0.55);
+}
+#msg.error {
+    border-color: #ff3b3b;
+    color: #ff6b6b;
+    text-shadow: 0 0 14px rgba(255, 59, 59, 0.85);
+    box-shadow:
+        0 0 26px 6px rgba(255, 59, 59, 0.45),
+        0 10px 28px rgba(0, 0, 0, 0.55);
+}
+@keyframes saved-pop {
+    0%   { transform: translateX(-50%) translateY(14px) scale(0.85); }
+    60%  { transform: translateX(-50%) translateY(-2px) scale(1.07); }
+    100% { transform: translateX(-50%) translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #msg,
+    #msg.show,
+    #msg.pop {
+        animation: none;
+        transform: translateX(-50%);
+        transition: opacity 0.2s ease;
+    }
+}
 .features-fieldset {
     display: inline-block;
     background: #23272f;

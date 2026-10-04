@@ -192,7 +192,7 @@
                 </button>
             {% endfor %}
         </div>
-        <p id="msg"></p>
+        <p id="msg" role="status" aria-live="polite"></p>
         <p id="map-msg" class="map-msg"></p>
         <div class="legend-features">
             <fieldset class="features-fieldset">
@@ -329,26 +329,50 @@
             }
         });
 
+        let feedbackHideTimer = null;
+
+        function showFeedback(text, state) {
+            const msgElem = document.getElementById('msg');
+            if (!msgElem) return;
+            clearTimeout(feedbackHideTimer);
+            msgElem.textContent = text;
+            msgElem.classList.remove('show', 'pop', 'saving', 'error');
+            void msgElem.offsetWidth; // force reflow so the pop animation replays
+            if (state === 'saving') msgElem.classList.add('saving');
+            if (state === 'error') msgElem.classList.add('error');
+            msgElem.classList.add('show', 'pop');
+        }
+
+        function hideFeedback(delay) {
+            const msgElem = document.getElementById('msg');
+            if (!msgElem) return;
+            clearTimeout(feedbackHideTimer);
+            feedbackHideTimer = setTimeout(function() {
+                msgElem.classList.remove('show', 'pop', 'saving', 'error');
+            }, delay || 0);
+        }
+
         function sendRating(rating) {
+            // Instant optimistic feedback so the keypress/click always feels registered.
+            showFeedback('Saving\u2026', 'saving');
             fetch('/rate', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({rating: rating})
             })
-            .then(res => res.json())
-            .then(function(data) {
-                const msgElem = document.getElementById('msg');
-                msgElem.innerText = 'Saved';
-                msgElem.style.opacity = '1';
-                msgElem.style.transition = 'opacity 0.5s';
-                setTimeout(() => {
-                    msgElem.style.opacity = '0';
-                }, 1000);
-                setTimeout(() => {
-                    msgElem.innerText = '';
-                    msgElem.style.transition = '';
-                    msgElem.style.opacity = '';
-                }, 1600);
+            .then(res => res.json().then(data => ({ok: res.ok, data: data})))
+            .then(function(result) {
+                if (result.ok) {
+                    showFeedback('Saved ' + rating + ' \u2713', 'saved');
+                    hideFeedback(1400);
+                } else {
+                    showFeedback((result.data && result.data.message) || 'Save failed', 'error');
+                    hideFeedback(2600);
+                }
+            })
+            .catch(function() {
+                showFeedback('Not saved \u2014 save failed', 'error');
+                hideFeedback(2600);
             });
             highlightButton(rating);
         }
